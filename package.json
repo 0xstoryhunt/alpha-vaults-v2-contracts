@@ -1,6 +1,7 @@
 {
   "name": "@charm/hardhat",
   "version": "0.0.1",
+  "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
     "deploy": "hardhat deploy --network optimism --export-all deployments.json",
@@ -8,7 +9,9 @@
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "postinstall": "yarn compile"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.2"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.7",

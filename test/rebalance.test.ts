@@ -6,11 +6,11 @@ import {
   swapForwardAndBack,
   swapToken,
   USDC,
-  WETH
+  WETH,
 } from "./helpers";
 
-describe("Rebalance", function() {
-  it("should gain profit after rebalance", async function() {
+describe("Rebalance", function () {
+  it("should gain profit after rebalance", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
     const [deployer] = await ethers.getSigners();
 
@@ -27,16 +27,14 @@ describe("Rebalance", function() {
     // make tiny deposit to simulate poke
     await vaultContract.deposit(10, 10, 1, 1, deployer.address);
 
-    const [
-      totalAfterPoke0,
-      totalAfterPoke1
-    ] = await vaultContract.getTotalAmounts();
+    const [totalAfterPoke0, totalAfterPoke1] =
+      await vaultContract.getTotalAmounts();
 
     expect(totalAfterPoke0.mul(1000000).div(total0)).gt(1000001);
     expect(totalAfterPoke1.mul(1000000).div(total1)).gt(1000001);
   });
 
-  it("manager fee is applied only to next rebalance", async function() {
+  it("manager fee is applied only to next rebalance", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
 
     //init fees amount is empty
@@ -86,7 +84,7 @@ describe("Rebalance", function() {
     expect(await vaultContract.accruedProtocolFees1()).to.eq(42793100500772);
   });
 
-  it("check only delegator and manager can rebalance", async function() {
+  it("check only delegator and manager can rebalance", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
     const [owner, user, otherUser] = await ethers.getSigners();
 
@@ -113,7 +111,7 @@ describe("Rebalance", function() {
     ).to.be.revertedWith("rebalanceDelegate");
   });
 
-  it("check enough time has passed", async function() {
+  it("check enough time has passed", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
 
     await vaultContract.setPeriod(100);
@@ -123,7 +121,7 @@ describe("Rebalance", function() {
     await vaultContract.rebalance();
   });
 
-  it("check price has moved enough", async function() {
+  it("check price has moved enough", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
 
     await vaultContract.setMinTickMove(1);
@@ -132,12 +130,12 @@ describe("Rebalance", function() {
     await swapToken({
       tokenIn: WETH,
       tokenOut: USDC,
-      amountIn: ethers.utils.parseEther("200")
+      amountIn: ethers.utils.parseEther("200"),
     });
     await vaultContract.rebalance();
   });
 
-  it("check price near twap", async function() {
+  it("check price near twap", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
 
     //shold rebalance if price is near twap
@@ -149,7 +147,7 @@ describe("Rebalance", function() {
     await swapToken({
       tokenIn: WETH,
       tokenOut: USDC,
-      amountIn: ethers.utils.parseEther("200")
+      amountIn: ethers.utils.parseEther("200"),
     });
     await expect(vaultContract.rebalance()).to.be.revertedWith("TP");
 

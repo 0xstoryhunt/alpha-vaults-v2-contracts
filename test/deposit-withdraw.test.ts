@@ -5,11 +5,11 @@ import { BigNumber } from "ethers";
 import {
   deployFactory,
   deployFactoryWithDeposit,
-  swapForwardAndBack
+  swapForwardAndBack,
 } from "./helpers";
 
-describe("Deposit and Withdraw", function() {
-  it("test initial deposit", async function() {
+describe("Deposit and Withdraw", function () {
+  it("test initial deposit", async function () {
     const { vaultContract } = await loadFixture(deployFactoryWithDeposit);
     expect(await vaultContract.fullRangeWeight()).to.eq(0);
     await vaultContract.setFullRangeWeight(50000);
@@ -26,15 +26,11 @@ describe("Deposit and Withdraw", function() {
     [1e10, 0],
     [0, 1e10],
     [1e4, 1e10],
-    [1e10, 1e10]
+    [1e10, 1e10],
   ].forEach(([amount0Desired, amount1Desired]) => {
-    it(`should deposit ${amount0Desired} ${amount1Desired}`, async function() {
-      const {
-        vaultContract,
-        owner,
-        usdcContract,
-        wethContract
-      } = await loadFixture(deployFactory);
+    it(`should deposit ${amount0Desired} ${amount1Desired}`, async function () {
+      const { vaultContract, owner, usdcContract, wethContract } =
+        await loadFixture(deployFactory);
 
       const balance0 = await usdcContract.balanceOf(owner.address);
       const balance1 = await wethContract.balanceOf(owner.address);
@@ -66,13 +62,9 @@ describe("Deposit and Withdraw", function() {
     });
   });
 
-  it("test deposit checks", async function() {
-    const {
-      vaultContract,
-      owner,
-      usdcContract,
-      wethContract
-    } = await loadFixture(deployFactory);
+  it("test deposit checks", async function () {
+    const { vaultContract, owner, usdcContract, wethContract } =
+      await loadFixture(deployFactory);
 
     await usdcContract.approve(
       vaultContract.address,
@@ -109,7 +101,7 @@ describe("Deposit and Withdraw", function() {
     ).to.be.revertedWith("maxTotalSupply");
   });
 
-  it("should be able to deposit and withdraw", async function() {
+  it("should be able to deposit and withdraw", async function () {
     const { vaultContract, usdcContract, wethContract } = await loadFixture(
       deployFactoryWithDeposit
     );
@@ -144,7 +136,7 @@ describe("Deposit and Withdraw", function() {
     );
   });
 
-  it("test withdraw checks", async function() {
+  it("test withdraw checks", async function () {
     const { vaultContract, usdcContract, wethContract } = await loadFixture(
       deployFactoryWithDeposit
     );

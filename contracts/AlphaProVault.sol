@@ -371,14 +371,12 @@ contract AlphaProVault is
      * should use up all of one token, leaving only the other one. This excess
      * amount is then placed as a single-sided bid or ask order.
      */
+
+    event Test(address indexed sender, address indexed manager);
+
     function rebalance() external override nonReentrant {
         checkCanRebalance();
-        if (rebalanceDelegate != address(0)) {
-            require(
-                msg.sender == manager || msg.sender == rebalanceDelegate,
-                "rebalanceDelegate"
-            );
-        }
+        require(msg.sender == manager || msg.sender == rebalanceDelegate, "rebalanceDelegate");
 
         // Withdraw all current liquidity from Uniswap pool
         int24 _fullLower = fullLower;
@@ -391,24 +389,20 @@ contract AlphaProVault is
             _burnAndCollect(baseLower, baseUpper, baseLiquidity);
             _burnAndCollect(limitLower, limitUpper, limitLiquidity);
         }
-
         // Calculate new ranges
         (, int24 tick, , , , , ) = pool.slot0();
         int24 tickFloor = _floor(tick);
         int24 tickCeil = tickFloor + tickSpacing;
-
         int24 _baseLower = tickFloor - baseThreshold;
         int24 _baseUpper = tickCeil + baseThreshold;
         int24 _bidLower = tickFloor - limitThreshold;
         int24 _bidUpper = tickFloor;
         int24 _askLower = tickCeil;
         int24 _askUpper = tickCeil + limitThreshold;
-
         // Emit snapshot to record balances and supply
         uint256 balance0 = getBalance0();
         uint256 balance1 = getBalance1();
         emit Snapshot(tick, balance0, balance1, totalSupply());
-
         // Place full range order on Uniswap
         {
             uint128 maxFullLiquidity = _liquidityForAmounts(
@@ -422,7 +416,6 @@ contract AlphaProVault is
             );
             _mintLiquidity(_fullLower, _fullUpper, fullLiquidity);
         }
-
         // Place base order on Uniswap
         balance0 = getBalance0();
         balance1 = getBalance1();
@@ -436,7 +429,6 @@ contract AlphaProVault is
             _mintLiquidity(_baseLower, _baseUpper, baseLiquidity);
             (baseLower, baseUpper) = (_baseLower, _baseUpper);
         }
-
         // Place bid or ask order on Uniswap depending on which token is left
         balance0 = getBalance0();
         balance1 = getBalance1();
@@ -449,10 +441,8 @@ contract AlphaProVault is
             _mintLiquidity(_askLower, _askUpper, askLiquidity);
             (limitLower, limitUpper) = (_askLower, _askUpper);
         }
-
         lastTimestamp = block.timestamp;
         lastTick = tick;
-
         // Update fee only at each rebalance, so that if fee is increased
         // it won't be applied retroactively to current open positions
         protocolFee = factory.protocolFee();
