@@ -8,15 +8,16 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
-import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
 import "./AlphaProVaultFactory.sol";
+import "./libraries/IStoryHuntV3MintCallback.sol";
+import "./libraries/IStoryHuntV3SwapCallback.sol";
 import "../interfaces/IVault.sol";
+import "hardhat/console.sol";
 
 /**
  * @param pool Underlying Uniswap V3 pool address
@@ -58,8 +59,8 @@ struct VaultParams {
  */
 contract AlphaProVault is
     IVault,
-    IUniswapV3MintCallback,
-    IUniswapV3SwapCallback,
+    IStoryHuntV3MintCallback,
+    IStoryHuntV3SwapCallback,
     ERC20Upgradeable,
     ReentrancyGuardUpgradeable
 {
@@ -372,9 +373,10 @@ contract AlphaProVault is
      * amount is then placed as a single-sided bid or ask order.
      */
 
-    event Test(address indexed sender, address indexed manager);
+    event Test(address indexed sender, uint256 indexed amount1, uint256 indexed amount2);
 
     function rebalance() external override nonReentrant {
+        console.log("contract rebalance");
         checkCanRebalance();
         require(msg.sender == manager || msg.sender == rebalanceDelegate, "rebalanceDelegate");
 
@@ -403,7 +405,9 @@ contract AlphaProVault is
         uint256 balance0 = getBalance0();
         uint256 balance1 = getBalance1();
         emit Snapshot(tick, balance0, balance1, totalSupply());
-        // Place full range order on Uniswap
+
+
+        // // Place full range order on Uniswap
         {
             uint128 maxFullLiquidity = _liquidityForAmounts(
                 _fullLower,
@@ -411,11 +415,16 @@ contract AlphaProVault is
                 balance0,
                 balance1
             );
+
+
             uint128 fullLiquidity = _toUint128(
                 uint256(maxFullLiquidity).mul(fullRangeWeight).div(1e6)
             );
+
             _mintLiquidity(_fullLower, _fullUpper, fullLiquidity);
         }
+
+
         // Place base order on Uniswap
         balance0 = getBalance0();
         balance1 = getBalance1();
@@ -664,7 +673,7 @@ contract AlphaProVault is
     }
 
     /// @dev Callback for Uniswap V3 pool.
-    function uniswapV3MintCallback(
+    function storyHuntV3MintCallback(
         uint256 amount0,
         uint256 amount1,
         bytes calldata data
@@ -675,7 +684,7 @@ contract AlphaProVault is
     }
 
     /// @dev Callback for Uniswap V3 pool.
-    function uniswapV3SwapCallback(
+    function storyHuntV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes calldata data
